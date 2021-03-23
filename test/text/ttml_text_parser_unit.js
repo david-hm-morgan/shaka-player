@@ -1261,9 +1261,22 @@ describe('TtmlTextParser', () => {
         {periodStart: 0, segmentStart: 0, segmentEnd: 0});
   });
 
-  it('supports timing on multiple levels', () => {
-    // Both start and end times are relative to the parent start time.
 
+  it('does not double the timing for 2 levels of clock time', () => {
+    // Both start and end times are relative to the parent start time.
+    verifyHelper(
+        [
+          {startTime: 3.999, endTime: 4.109, payload: 'Nested cue'},
+        ],
+        '<tt><body>' +
+        '<div begin="00:00:03.999" end="00:00:04.109">' +
+        '<p begin="00:00:03.999" end="00:00:04.109">Nested cue</p>' +
+        '</div></body></tt>',
+        {periodStart: 0, segmentStart: 0, segmentEnd: 0});
+  });
+
+  it('supports timing on three levels', () => {
+    // Both start and end times are relative to the parent start time.
     verifyHelper(
         [
           {startTime: 6, endTime: 7, payload: 'First cue'},
@@ -1275,7 +1288,10 @@ describe('TtmlTextParser', () => {
         '<p begin="4s" end="5s">Second cue</p>' +
         '</div></body></tt>',
         {periodStart: 0, segmentStart: 0, segmentEnd: 0});
+  });
 
+  it('supports timing on four levels', () => {
+    // Both start and end times are relative to the parent start time.
     verifyHelper(
         [{
           startTime: 6,

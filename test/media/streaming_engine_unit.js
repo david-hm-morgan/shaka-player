@@ -5344,5 +5344,36 @@ describe('StreamingEngine', () => {
       expect(result).toBe(true);
       expect(resetSpy).toHaveBeenCalledWith(true);
     });
+
+    it('does not retain crossBoundaryStrategy changes after recreation',
+      async () => {
+        const config =
+            shaka.util.PlayerConfiguration.createDefault().streaming;
+        config.crossBoundaryStrategy =
+            shaka.config.CrossBoundaryStrategy.RESET_TO_ENCRYPTED;
+        streamingEngine.configure(config);
+
+        const encryptedInitRef = makeInitRef(null, 10);
+        encryptedInitRef.encrypted = true;
+        const encryptedMediaState = makeMediaState(encryptedInitRef);
+        const encryptedSegRef = makeSegmentRef(encryptedInitRef);
+
+        (/** @type {?} */(streamingEngine))[
+            'discardReferenceByBoundary_'](
+            encryptedMediaState, encryptedSegRef);
+
+        await streamingEngine.destroy();
+        createStreamingEngine(config);
+
+        const lastInitRef = makeInitRef(null, 0);
+        const initRef = makeInitRef(null, 10);
+        const mediaState = makeMediaState(lastInitRef);
+        const segRef = makeSegmentRef(initRef);
+
+        const result = (/** @type {?} */(streamingEngine))[
+            'discardReferenceByBoundary_'](mediaState, segRef);
+
+        expect(result).toBe(false);
+    });
   });
 });
